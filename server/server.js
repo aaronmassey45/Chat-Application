@@ -3,13 +3,12 @@ const express = require('express');
 const socketIO = require('socket.io');
 const http = require('http');
 
+const {generateMessage, generateLocationMessage} = require('./utils/message');
 const port = process.env.PORT || 3000;
 const clientPath = path.join(__dirname, '../client');
 let app = express();
 let server = http.createServer(app);
 let io = socketIO(server);
-
-const {generateMessage} = require('./utils/message')
 
 app.use(express.static(clientPath));
 
@@ -24,12 +23,10 @@ io.on('connection', socket => {
     console.log('Message created', message);
     io.emit('newMessage', generateMessage(message.from, message.text));
     callback('Msg from server :)');
+  });
 
-    // socket.broadcast.emit('newMessage', {
-    //   from: message.from,
-    //   text: message.text,
-    //   createdAt: new Date().getTime()
-    // });
+  socket.on('createLocationMessage', coords => {
+    io.emit('newLocationMessage', generateLocationMessage('Admin', coords.lat, coords.lng));
   });
 
   socket.on('disconnect', () => {
