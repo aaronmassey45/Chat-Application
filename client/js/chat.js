@@ -7,20 +7,38 @@ function scrollToBottom() {
   let clientHeight = messages.prop('clientHeight');
   let scrollTop = messages.prop('scrollTop');
   let scrollHeight = messages.prop('scrollHeight');
-  let newMessageHeight = newmessage.innerHeight();
-  let lastMessageHeight = newMessage.prev.innerHeight();
+  let newMessageHeight = newMessage.innerHeight();
+  let lastMessageHeight = newMessage.prev().innerHeight();
 
   if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
-    message.scrollTop(scrollHeight);
+    messages.scrollTop(scrollHeight);
   }
 }
 
 socket.on('connect', function () {
-  console.log('Connected to server');
+  let params = $.deparam(window.location.search);
+  socket.emit('join', params, function (err) {
+    if (err) {
+      alert(err);
+      window.location.href = '/';
+    } else {
+      console.log('No errors');
+    }
+  });
 });
 
 socket.on('disconnect', function () {
   console.log('Disconnected from server');
+});
+
+socket.on('updateUserList', function (users) {
+  let ol = $('<ol></ol>');
+
+  users.forEach(function (user) {
+    ol.append($('<li></li>').text(user))
+  });
+
+  $('#users').html(ol);
 });
 
 socket.on('newMessage', function (message) {
